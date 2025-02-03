@@ -7,13 +7,13 @@
 #define WIN_Y 1000
 
 typedef struct {
-  int x;
-  int y;
+  float x;
+  float y;
 } Point;
 
 void drawRect(SDL_Renderer *r, Point point) {
   int size = 3;
-  SDL_Rect rect = {point.x + WIN_X/2, point.y + WIN_Y/2, size, size};
+  SDL_Rect rect = {point.x + WIN_X/2, WIN_Y/2 - point.y, size, size};
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
   SDL_RenderDrawRect(r, &rect);
 }
@@ -26,10 +26,21 @@ void drawBackground(SDL_Renderer *r, int height, int width) {
 
 void randomPoints(Point points[N_POINTS]) {
   for(int i = 0; i < N_POINTS; i++) {
-    points[i].x = (rand() % WIN_X) - WIN_X/2;
-    points[i].y = (rand() % WIN_Y) - WIN_Y/2;
+    points[i].x = (rand() % WIN_X) - WIN_X/2.f;
+    points[i].y = (rand() % WIN_Y) - WIN_Y/2.f;
   }
 }
+
+void sampleLine(float A, float b, Point points[N_POINTS]) {
+  int noise_level = 10;
+  for(int i = 0; i < N_POINTS; i++) {
+    float x = (rand() % WIN_Y) - WIN_Y/2.f;
+    float y = A*x + b;
+    points[i].x = x;
+    points[i].y = y;
+  }
+}
+
 
 
 int main() {
@@ -43,8 +54,11 @@ int main() {
     SDL_Event e;
 
     
-    Point points[N_POINTS];
-    randomPoints(points);
+    Point random_points[N_POINTS];
+    Point line_points[N_POINTS];
+    randomPoints(random_points);
+    sampleLine(1, 20, line_points);
+    
 
     while (running) {
         while (SDL_PollEvent(&e)) {
@@ -63,7 +77,8 @@ int main() {
 
 
         for(int i = 0; i < N_POINTS; i++) {
-          drawRect(r, points[i]);
+          drawRect(r, random_points[i]);
+          drawRect(r, line_points[i]);
         }
 
 
