@@ -6,12 +6,8 @@
 #define WIN_X 1000
 #define WIN_Y 1000
 
-typedef struct {
-  float x;
-  float y;
-} Point;
 
-void drawRect(SDL_Renderer *r, Point point) {
+void drawRect(SDL_Renderer *r, SDL_Point point) {
   int size = 3;
   SDL_Rect rect = {point.x + WIN_X/2, WIN_Y/2 - point.y, size, size};
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
@@ -24,14 +20,14 @@ void drawBackground(SDL_Renderer *r, int height, int width) {
   SDL_RenderDrawLine(r, WIN_X/2, 0, WIN_X/2, WIN_Y);
 }
 
-void randomPoints(Point points[N_POINTS]) {
+void randomPoints(SDL_Point points[N_POINTS]) {
   for(int i = 0; i < N_POINTS; i++) {
     points[i].x = (rand() % WIN_X) - WIN_X/2.f;
     points[i].y = (rand() % WIN_Y) - WIN_Y/2.f;
   }
 }
 
-void sampleLine(float A, float b, Point points[N_POINTS]) {
+void sampleLine(float A, float b, SDL_Point points[N_POINTS]) {
   int noise_level = 10;
   for(int i = 0; i < N_POINTS; i++) {
     float x = (rand() % WIN_Y) - WIN_Y/2.f;
@@ -54,8 +50,32 @@ int main() {
     SDL_Event e;
 
     
-    Point random_points[N_POINTS];
-    Point line_points[N_POINTS];
+
+    const int WIDTH = 200;
+    const int HEIGHT = 200;
+
+    Uint32 R_MASK = 0xFF000000;
+    Uint32 G_MASK = 0x00FF0000;
+    Uint32 B_MASK = 0x0000FF00;
+    Uint32 A_MASK = 0x000000FF;
+
+    SDL_Surface *surface = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32, R_MASK, G_MASK, B_MASK, A_MASK);
+    if (surface == NULL) {
+      // Handle error
+    }
+    SDL_Rect rect = {0, 0, WIDTH, HEIGHT};
+    Uint32 color = SDL_MapRGB(surface->format, 0x00, 0x00, 0xFF);
+    if (SDL_FillRect(surface, &rect, color) != 0) {
+      // Handle error
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(r, surface);
+    if (texture == NULL) {
+      // Handle error
+    }
+
+
+    SDL_Point random_points[N_POINTS];
+    SDL_Point line_points[N_POINTS];
     randomPoints(random_points);
     sampleLine(1, 20, line_points);
     
@@ -74,6 +94,16 @@ int main() {
         SDL_RenderClear(r);
 
         drawBackground(r, 1000, 100);
+        SDL_Rect destRect = {200, 200, WIDTH, HEIGHT};
+        SDL_Point center = {WIDTH/2, HEIGHT/2};
+        SDL_RenderCopyEx(r,
+                   texture,
+                   NULL,
+                   &destRect,
+                   45,
+                   &center,
+                   SDL_FLIP_NONE);
+                     
 
 
         for(int i = 0; i < N_POINTS; i++) {
