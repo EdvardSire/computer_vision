@@ -1,10 +1,18 @@
+#include "SDL_rect.h"
 #include <SDL2/SDL.h>
 
-void drawRect(SDL_Renderer *r, int i) {
+
+typedef struct {
+  int x;
+  int y;
+} Point;
+
+void drawRect(SDL_Renderer *r, int x, int y, int h, int w) {
+  SDL_Rect rect = {x, y, w, h};
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
-  SDL_Rect shape = {i, i, i+20, i+20};
-  SDL_RenderDrawRect(r, &shape);
+  SDL_RenderDrawRect(r, &rect);
 }
+
 void drawBackground(SDL_Renderer *r, int height, int width) {
   SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
   SDL_RenderDrawLine(r, 0, 500, 1000, 500);
@@ -18,24 +26,28 @@ int main() {
 
 
     int running = 1;
-    int i = 200;
+    int l = 10;
     SDL_Event e;
 
+    rand();
     while (running) {
         while (SDL_PollEvent(&e)) {
           if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)))
                 running = 0;
           if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_f)
-              i += 10;
+              l += 1;
 
           if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g)
-              i -= 10;
+              l -= 1;
         }
         SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
         SDL_RenderClear(r);
 
         drawBackground(r, 1000, 100);
-        drawRect(r, i);
+
+        for(int i = 0; i < l; i++) {
+          drawRect(r, i*20, i*20, 20, 20);
+        }
 
 
         SDL_RenderPresent(r);
