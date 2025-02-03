@@ -64,6 +64,7 @@ int main() {
     int running = 1;
     int l = 10;
     SDL_Event e;
+    double angle = 10;
 
 
     SDL_Point random_points[N_POINTS];
@@ -77,10 +78,10 @@ int main() {
           if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q)))
                 running = 0;
           if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_f)
-              l += 1;
+              angle += 1;
 
           if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_g)
-              l -= 1;
+              angle -= 1;
         }
         SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
         SDL_RenderClear(r);
@@ -89,17 +90,13 @@ int main() {
 
         const int width = 200;
         const int height = 200;
-        const double angle = 10;
         SDL_Texture* texture = createTexture(r, width, height);
-
-        SDL_Rect destRect = {200, 200, width, height};
-        SDL_Point center = {width/2, height/2};
         SDL_RenderCopyEx(r,
                    texture,
                    NULL,
-                   &destRect,
+                   &(SDL_Rect){200, 200, width, height},
                    angle,
-                   &center,
+                   &(SDL_Point){width/2, height/2},
                    SDL_FLIP_NONE);
                      
 
