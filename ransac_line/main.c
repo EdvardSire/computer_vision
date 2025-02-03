@@ -1,4 +1,6 @@
 #include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_surface.h"
 #include <SDL2/SDL.h>
 
 
@@ -38,6 +40,20 @@ void sampleLine(float A, float b, SDL_Point points[N_POINTS]) {
 }
 
 
+SDL_Texture* createTexture(SDL_Renderer* r, const int width, const int height) {
+    Uint32 R_MASK = 0xFF000000;
+    Uint32 G_MASK = 0x00FF0000;
+    Uint32 B_MASK = 0x0000FF00;
+    Uint32 A_MASK = 0x000000FF;
+    SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 32, R_MASK, G_MASK, B_MASK, A_MASK);
+    SDL_Rect rect = {0, 0, width, height};
+    Uint32 color = SDL_MapRGB(surface->format, 0x00, 0x00, 0xFF);
+    SDL_FillRect(surface, &rect, color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(r, surface);
+    SDL_FreeSurface(surface);
+
+    return texture;
+}
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -48,30 +64,6 @@ int main() {
     int running = 1;
     int l = 10;
     SDL_Event e;
-
-    
-
-    const int WIDTH = 200;
-    const int HEIGHT = 200;
-
-    Uint32 R_MASK = 0xFF000000;
-    Uint32 G_MASK = 0x00FF0000;
-    Uint32 B_MASK = 0x0000FF00;
-    Uint32 A_MASK = 0x000000FF;
-
-    SDL_Surface *surface = SDL_CreateRGBSurface(0, WIDTH, HEIGHT, 32, R_MASK, G_MASK, B_MASK, A_MASK);
-    if (surface == NULL) {
-      // Handle error
-    }
-    SDL_Rect rect = {0, 0, WIDTH, HEIGHT};
-    Uint32 color = SDL_MapRGB(surface->format, 0x00, 0x00, 0xFF);
-    if (SDL_FillRect(surface, &rect, color) != 0) {
-      // Handle error
-    }
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(r, surface);
-    if (texture == NULL) {
-      // Handle error
-    }
 
 
     SDL_Point random_points[N_POINTS];
@@ -92,15 +84,21 @@ int main() {
         }
         SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
         SDL_RenderClear(r);
-
         drawBackground(r, 1000, 100);
-        SDL_Rect destRect = {200, 200, WIDTH, HEIGHT};
-        SDL_Point center = {WIDTH/2, HEIGHT/2};
+
+
+        const int width = 200;
+        const int height = 200;
+        const double angle = 10;
+        SDL_Texture* texture = createTexture(r, width, height);
+
+        SDL_Rect destRect = {200, 200, width, height};
+        SDL_Point center = {width/2, height/2};
         SDL_RenderCopyEx(r,
                    texture,
                    NULL,
                    &destRect,
-                   45,
+                   angle,
                    &center,
                    SDL_FLIP_NONE);
                      
