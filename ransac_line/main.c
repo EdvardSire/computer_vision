@@ -1,25 +1,40 @@
-#include "SDL_rect.h"
 #include "SDL_render.h"
-#include "SDL_surface.h"
 #include <SDL2/SDL.h>
+#include <stdio.h>
+#include <math.h>
 
 
 #define N_POINTS 200
 #define WIN_X 1000
 #define WIN_Y 1000
+#define CONSENSUS_WIDTH 20
 
 
-void drawRect(SDL_Renderer *r, SDL_Point point) {
+float tfx(float x) {
+  return x + WIN_X/2.f;
+}
+
+float tfy(float y) {
+  return WIN_Y/2.f - y;
+}
+
+
+void drawRect(SDL_Renderer* r, SDL_Point point) {
   int size = 3;
-  SDL_Rect rect = {point.x + WIN_X/2, WIN_Y/2 - point.y, size, size};
+  SDL_Rect rect = {tfx(point.x), tfy(point.y), size, size};
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
   SDL_RenderDrawRect(r, &rect);
 }
 
-void drawBackground(SDL_Renderer *r, int height, int width) {
+void drawBackground(SDL_Renderer* r, int height, int width) {
   SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
   SDL_RenderDrawLine(r, 0, WIN_Y/2, WIN_X, WIN_Y/2);
   SDL_RenderDrawLine(r, WIN_X/2, 0, WIN_X/2, WIN_Y);
+}
+
+void drawLine(SDL_Renderer* r, SDL_Point p1, SDL_Point p2) {
+  SDL_SetRenderDrawColor(r, 0, 255, 0, 255);
+  SDL_RenderDrawLine(r, tfx(p1.x), tfy(p1.y), tfx(p2.x), tfy(p2.y));
 }
 
 void randomPoints(SDL_Point points[N_POINTS]) {
@@ -57,21 +72,33 @@ SDL_Texture* createTexture(SDL_Renderer* r, const int width, const int height) {
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window *w = SDL_CreateWindow("Rect", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_X, WIN_Y, 0);
-    SDL_Renderer *r = SDL_CreateRenderer(w, -1, 0);
+    SDL_Window *window = SDL_CreateWindow("Rect", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_X, WIN_Y, 0);
+    SDL_Renderer *r = SDL_CreateRenderer(window, -1, 0);
 
 
     int running = 1;
     int l = 10;
     SDL_Event e;
-    double angle = 10;
+    double angle = 0;
 
 
     SDL_Point random_points[N_POINTS];
     SDL_Point line_points[N_POINTS];
     randomPoints(random_points);
     sampleLine(1, 20, line_points);
+    SDL_Texture* texture = createTexture(r, 5, 5);
     
+    SDL_Point p1 = {-200, -50};
+    SDL_Point p2 = {200,  50};
+    float cx = (p1.x+p2.x)/2.f;
+    float cy = (p1.y+p2.y)/2.f;
+    float dy = p2.y-p1.y;
+    float dx = p2.x-p1.x;
+    int w = sqrt(pow(dy, 2) + pow(dx, 2));
+    int h = CONSENSUS_WIDTH;
+    angle = -atan(dy/dx)*(180.f / M_PI);
+    printf("%f\n", tfx(cx));
+    printf("%f\n", tfy(cy));
 
     while (running) {
         while (SDL_PollEvent(&e)) {
@@ -87,17 +114,14 @@ int main() {
         SDL_RenderClear(r);
         drawBackground(r, 1000, 100);
 
-
-        const int width = 200;
-        const int height = 200;
-        SDL_Texture* texture = createTexture(r, width, height);
         SDL_RenderCopyEx(r,
                    texture,
                    NULL,
-                   &(SDL_Rect){200, 200, width, height},
+                   &(SDL_Rect){tfx(cx-w/2.f), tfy(cy+h/2.f), w, h},
                    angle,
-                   &(SDL_Point){width/2, height/2},
+                   &(SDL_Point){w/2.f, h/2.f},
                    SDL_FLIP_NONE);
+        drawLine(r, p1, p2);
                      
 
 
@@ -111,7 +135,7 @@ int main() {
         SDL_Delay(16);
     }
     SDL_DestroyRenderer(r);
-    SDL_DestroyWindow(w);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
 }
