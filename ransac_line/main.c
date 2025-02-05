@@ -10,14 +10,9 @@
 #define CONSENSUS_WIDTH 20
 
 
-float tfx(float x) {
-  return x + WIN_X/2.f;
-}
+float tfx(float x) { return x + WIN_X/2.f; }
 
-float tfy(float y) {
-  return WIN_Y/2.f - y;
-}
-
+float tfy(float y) { return WIN_Y/2.f - y; }
 
 void drawRect(SDL_Renderer* r, SDL_Point point) {
   int size = 3;
@@ -32,9 +27,9 @@ void drawBackground(SDL_Renderer* r, int height, int width) {
   SDL_RenderDrawLine(r, WIN_X/2, 0, WIN_X/2, WIN_Y);
 }
 
-void drawLine(SDL_Renderer* r, SDL_Point p1, SDL_Point p2) {
+void drawLine(SDL_Renderer* r, SDL_Point* p1, SDL_Point* p2) {
   SDL_SetRenderDrawColor(r, 0, 255, 0, 255);
-  SDL_RenderDrawLine(r, tfx(p1.x), tfy(p1.y), tfx(p2.x), tfy(p2.y));
+  SDL_RenderDrawLine(r, tfx(p1->x), tfy(p1->y), tfx(p2->x), tfy(p2->y));
 }
 
 void randomPoints(SDL_Point points[N_POINTS]) {
@@ -54,7 +49,6 @@ void sampleLine(float A, float b, SDL_Point points[N_POINTS]) {
   }
 }
 
-
 SDL_Texture* createTexture(SDL_Renderer* r, const int width, const int height) {
     Uint32 R_MASK = 0xFF000000;
     Uint32 G_MASK = 0x00FF0000;
@@ -70,11 +64,11 @@ SDL_Texture* createTexture(SDL_Renderer* r, const int width, const int height) {
     return texture;
 }
 
-void drawConsensus(SDL_Renderer* r, SDL_Texture* texture, SDL_Point p1, SDL_Point p2) {
-    float cx = (p1.x+p2.x)/2.f;
-    float cy = (p1.y+p2.y)/2.f;
-    float dy = p2.y-p1.y;
-    float dx = p2.x-p1.x;
+void drawConsensus(SDL_Renderer* r, SDL_Texture* texture, SDL_Point* p1, SDL_Point* p2) {
+    float cx = (p1->x+p2->x)/2.f;
+    float cy = (p1->y+p2->y)/2.f;
+    float dy = p2->y-p1->y;
+    float dx = p2->x-p1->x;
     int w = sqrt(pow(dy, 2) + pow(dx, 2));
     int h = CONSENSUS_WIDTH;
     double angle = -atan(dy/dx)*(180.f / M_PI);
@@ -88,6 +82,8 @@ void drawConsensus(SDL_Renderer* r, SDL_Texture* texture, SDL_Point p1, SDL_Poin
         SDL_FLIP_NONE);
     drawLine(r, p1, p2);
 }
+
+
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -107,8 +103,8 @@ int main() {
     sampleLine(1, 20, line_points);
     SDL_Texture* texture = createTexture(r, 5, 5);
     
-    SDL_Point p1 = {-200, -50};
-    SDL_Point p2 = {200,  50};
+    SDL_Point* p1;
+    SDL_Point* p2;
 
     while (running) {
         while (SDL_PollEvent(&e)) {
@@ -123,6 +119,10 @@ int main() {
         SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
         SDL_RenderClear(r);
 
+        // algo
+        p1 = &random_points[rand() % N_POINTS];
+        p2 = &random_points[rand() % N_POINTS];
+        //
         drawBackground(r, 1000, 100);
         drawConsensus(r, texture, p1, p2);
         for(int i = 0; i < N_POINTS; i++) {
@@ -132,7 +132,7 @@ int main() {
 
 
         SDL_RenderPresent(r);
-        SDL_Delay(16);
+        SDL_Delay(500);
     }
     SDL_DestroyRenderer(r);
     SDL_DestroyWindow(window);
